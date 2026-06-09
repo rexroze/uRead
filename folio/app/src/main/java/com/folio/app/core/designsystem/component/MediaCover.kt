@@ -31,16 +31,19 @@ import kotlin.math.absoluteValue
  * calm typographic placeholder tinted by a deterministic colour derived from the
  * title. This keeps an empty/offline library looking intentional, not broken.
  *
- * Aspect ratio adapts to format: tall for books/manga, square for audio.
+ * [coverRatio] defaults to 0.68 (book-proportioned) for every format including
+ * audio — consistency in the grid matters more than "album art" being square.
+ * The audio player in ReaderScreen passes its own ratio for the album art layout.
  */
 @Composable
 fun MediaCover(
     media: Media,
     modifier: Modifier = Modifier,
+    coverRatio: Float = 0.68f,
     onClick: (() -> Unit)? = null,
 ) {
     val colors = FolioTheme.colors
-    val ratio = if (media.type.isAudio) 1f else 0.68f
+    val ratio = coverRatio
 
     val base = modifier
         .aspectRatio(ratio)

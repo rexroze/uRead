@@ -8,13 +8,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -35,6 +41,7 @@ import com.folio.app.data.mock.MockLibrary
 fun HomeScreen(
     onOpen: (String) -> Unit,
     onContinue: (String) -> Unit,
+    onMenuOpen: () -> Unit,
 ) {
     val colors = FolioTheme.colors
     val continueReading = MockLibrary.continueReading
@@ -51,11 +58,25 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(Spacing.xl),
     ) {
         item {
-            Text(
-                text = "Folio",
-                style = MaterialTheme.typography.headlineLarge,
-                color = colors.ink,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = "Folio",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = colors.ink,
+                )
+                IconButton(onClick = onMenuOpen) {
+                    Icon(
+                        Icons.Outlined.Menu,
+                        contentDescription = "Menu",
+                        tint = colors.inkMuted,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+            }
         }
 
         if (continueReading.isNotEmpty()) {
@@ -76,9 +97,7 @@ fun HomeScreen(
 
         if (upNext.isNotEmpty()) {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                    SectionHeader(title = "Up next")
-                }
+                SectionHeader(title = "Up next")
             }
             items(upNext, key = { it.id }) { media ->
                 UpNextRow(media = media, onClick = { onOpen(media.id) })
