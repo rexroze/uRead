@@ -14,20 +14,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Bookmark
+import androidx.compose.material.icons.outlined.Forward30
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Replay10
-import androidx.compose.material.icons.outlined.Forward30
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,9 +53,10 @@ import com.folio.app.data.mock.MockLibrary
  * default it's hidden so the content is full-bleed. Branches by format:
  * audiobooks get a player, everything else gets the text/page surface.
  *
- * This is the immersive shell — a real Readium navigator (ebooks) / image pager
- * (manga) / ExoPlayer (audio) slots into the marked body region.
+ * A bookmark icon in the bottom chrome opens the annotations sheet (notes,
+ * highlights, underlines for the current item).
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderScreen(
     mediaId: String,
@@ -61,10 +65,17 @@ fun ReaderScreen(
     val colors = FolioTheme.colors
     val media = MockLibrary.byId(mediaId)
     var chromeVisible by remember { mutableStateOf(false) }
+    var annotationsVisible by remember { mutableStateOf(false) }
     val noIndication = remember { MutableInteractionSource() }
+    val annotationsSheetState = rememberModalBottomSheetState(skipPartialExpansion = true)
 
     if (media == null) {
-        Box(Modifier.fillMaxSize().background(colors.paper), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(colors.paper),
+            contentAlignment = Alignment.Center,
+        ) {
             Text("Not found", color = colors.inkMuted)
         }
         return
@@ -120,7 +131,7 @@ fun ReaderScreen(
             }
         }
 
-        // Bottom chrome — progress + position.
+        // Bottom chrome — progress + position + annotations button.
         AnimatedVisibility(
             visible = chromeVisible,
             enter = fadeIn(),
@@ -136,13 +147,49 @@ fun ReaderScreen(
                 verticalArrangement = Arrangement.spacedBy(Spacing.sm),
             ) {
                 ProgressHairline(progress = media.progress)
-                Text(
-                    text = positionLabel(media),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.inkMuted,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = positionLabel(media),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.inkMuted,
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clickable { annotationsVisible = true }
+                            .padding(Spacing.xs),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                        ) {
+                            Icon(
+                                Icons.Outlined.Bookmark,
+                                contentDescription = "Annotations",
+                                tint = colors.inkMuted,
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Text(
+                                "Notes",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.inkMuted,
+                            )
+                        }
+                    }
+                }
             }
         }
+    }
+
+    if (annotationsVisible) {
+        AnnotationsSheet(
+            mediaId = mediaId,
+            sheetState = annotationsSheetState,
+            onDismiss = { annotationsVisible = false },
+        )
     }
 }
 
@@ -181,7 +228,8 @@ private fun AudioBody(media: Media) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        MediaCover(media = media, modifier = Modifier.fillMaxWidth(0.62f))
+        // Audio player uses 1:1 (album-art) ratio; the rest of the app uses 0.68.
+        MediaCover(media = media, modifier = Modifier.fillMaxWidth(0.62f), coverRatio = 1f)
         Spacer(Modifier.height(Spacing.xl))
         Text(
             text = media.title,

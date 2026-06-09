@@ -28,5 +28,8 @@ object Routes {
     const val READER = "reader/{mediaId}"
     fun reader(mediaId: String) = "reader/$mediaId"
 
+    const val STATISTICS = "statistics"
+    const val SETTINGS = "settings"
+
     const val MEDIA_ID_ARG = "mediaId"
 }
