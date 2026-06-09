@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Warm off-white "paper" used for system bars before Compose draws. -->
+    <color name="paper">#FAF8F4</color>
+    <color name="ink">#1C1B19</color>
+</resources>

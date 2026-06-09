@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- True dark for AMOLED in night mode. -->
+    <color name="paper">#0B0B0C</color>
+    <color name="ink">#EDE9E1</color>
+</resources>
